@@ -1,7 +1,9 @@
 package com.example.parvaznama.koin
 
 import com.example.parvaznama.remote.ktor.repository.AirlineRepository
+import com.example.parvaznama.remote.ktor.repository.AirportRepository
 import com.example.parvaznama.view.viewModel.AirlineViewModel
+import com.example.parvaznama.view.viewModel.AirportViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.plugins.HttpTimeout
@@ -34,7 +36,9 @@ val appModule = module {
     }
     //repo
     single { AirlineRepository(get()) }
+    single { AirportRepository(get()) }
 
     //viewModel
     viewModel{AirlineViewModel(get())}
+    viewModel{AirportViewModel(get())}
 }

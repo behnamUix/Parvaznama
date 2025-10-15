@@ -3,6 +3,8 @@ package com.example.parvaznama.view.component
 import Airline
 import FlightArrival
 import FlightDeparture
+import android.content.ClipboardManager
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +25,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,7 +35,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.Clipboard
+import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -175,35 +181,31 @@ fun BottomSheetComp(
                         color = MaterialTheme.colorScheme.background
                     )
                     HorizontalDivider(
-                        color = MaterialTheme.colorScheme.primary,
+                        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
                         modifier = Modifier
-                            .fillMaxWidth(0.8f)
+                            .fillMaxWidth(1f)
                             .padding(8.dp)
                     )
                     //---------------------------------------------------------
 
                     Column(
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp),
-                        horizontalAlignment = Alignment.End
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Column (
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-
-
-                            Text(
-                                text = departureAirportName,
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
-                            )
                             Text(
                                 text = " فرودگاه مبدا",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.background
                             )
+                            CopyableText(departureAirportName)
+
 
                         }
                         Row(
@@ -240,22 +242,18 @@ fun BottomSheetComp(
 
                         }
                         //------------------
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(4.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Column (
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
                         ) {
 
 
-                            Text(
-                                text = arrivalAirportName.take(30),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
-                            )
                             Text(
                                 text = " فرودگاه مقصد",
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = MaterialTheme.colorScheme.background
                             )
+                            CopyableText(arrivalAirportName)
 
                         }
                         Row(
@@ -263,19 +261,19 @@ fun BottomSheetComp(
                             verticalAlignment = Alignment.CenterVertically,
                             horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
-                           Row {
+                            Row {
 
-                               Text(
-                                   text = "${arrGate}",
-                                   style = MaterialTheme.typography.labelLarge,
-                                   color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
-                               )
-                               Text(
-                                   text = "گیت:",
-                                   style = MaterialTheme.typography.labelLarge,
-                                   color = MaterialTheme.colorScheme.background
-                               )
-                           }
+                                Text(
+                                    text = "${arrGate}",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
+                                )
+                                Text(
+                                    text = "گیت:",
+                                    style = MaterialTheme.typography.labelLarge,
+                                    color = MaterialTheme.colorScheme.background
+                                )
+                            }
                             Row {
 
                                 Text(
@@ -297,6 +295,29 @@ fun BottomSheetComp(
                 }
             }
         }
+    }
+}
+
+@Composable
+fun CopyableText(text: String) {
+    val clipboardManager: androidx.compose.ui.platform.ClipboardManager =
+        LocalClipboardManager.current
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+            painter = painterResource(R.drawable.icon_copy),
+            contentDescription = "",
+            tint = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
+        )
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f),
+            modifier = Modifier.clickable {
+                clipboardManager.setText(AnnotatedString(text))
+            }
+        )
+
     }
 }
 

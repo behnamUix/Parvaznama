@@ -1,25 +1,18 @@
 package com.example.parvaznama.view.navigation
 
-import Aircraft
 import Airline
 import FlightArrival
 import FlightDeparture
-import Live
-import android.Manifest
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseInBack
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,61 +20,40 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import com.example.parvaznama.R
 import com.example.parvaznama.utils.AirportRepository
-import com.example.parvaznama.utils.calculateDistance
-import com.example.parvaznama.utils.convertMiladiToShamsi
 import com.example.parvaznama.utils.getCoordinateWithCity
 import com.example.parvaznama.view.anim.LoadingAnim
 import com.example.parvaznama.view.component.BottomSheetComp
 import com.example.parvaznama.view.component.MapBoxScreen
-import com.example.parvaznama.view.component.SliderBetweenComp
 import com.example.parvaznama.view.component.ToolbarComp
-import com.example.parvaznama.view.viewModel.AirlineViewModel
 import com.orhanobut.hawk.Hawk
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.koin.androidx.compose.koinViewModel
 
 object SplashSc : Screen {
     @Composable
@@ -271,7 +243,7 @@ object HomeSc : Screen {
             Column(
                 modifier = Modifier
             ) {
-                TabNavigator(AirlineListTab) { tabNavigator ->
+                TabNavigator(AirportSearchTab) { tabNavigator ->
                     Column(modifier = Modifier.fillMaxSize()) {
                         TopNavigation(tabNavigator = tabNavigator)
                         Box(modifier = Modifier.weight(1f)) {

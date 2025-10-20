@@ -1,6 +1,8 @@
 package com.example.parvaznama.view.component.item
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -55,11 +58,12 @@ fun AirportListCardItem(it: AirportItem,itemClick:()->Unit) {
                     .fillMaxWidth()
                     .padding(8.dp)
             ) {
-                AsyncImage(
+                Image(
                     modifier = Modifier
+                        .border(color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f), width = 0.2.dp, shape = CircleShape)
                         .size(80.dp)
                         .clip(CircleShape),
-                    model = "https://img.freepik.com/premium-photo/woman-with-suitcase-hand-looks-out-airport-window-while-waiting-her-flight_1048944-12674907.jpg",
+                    painter = painterResource(R.drawable.ic_launcher_foreground),
                     contentDescription = "",
                     contentScale = ContentScale.Crop
                 )
@@ -96,6 +100,7 @@ fun AirportListCardItem(it: AirportItem,itemClick:()->Unit) {
                 }
             }
             Button(
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier.fillMaxWidth(),
                 onClick = {

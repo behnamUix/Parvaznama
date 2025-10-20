@@ -32,6 +32,7 @@ data class FlightData(
     val departure: FlightDeparture? = null,
     val arrival: FlightArrival? = null,
     val airline: Airline? = null,
+    val flight: FlightDetail? = null,
     val aircraft: Aircraft? = null,
     val live: Live? = null
 )
@@ -41,6 +42,24 @@ data class Airline(
     val name: String? = null,
     val iata: String? = null,
     val icao: String? = null
+)
+
+@Serializable
+data class FlightDetail(
+    val number: String? = null,
+    val iata: String? = null,
+    val icao: String? = null,
+    val codeshared: Codeshared? = null
+)
+
+@Serializable
+data class Codeshared(
+    @SerialName("airline_name") val airlineName: String? = null,
+    @SerialName("airline_iata") val airlineIata: String? = null,
+    @SerialName("airline_icao") val airlineIcao: String? = null,
+    @SerialName("flight_number") val flightNumber: String? = null,
+    @SerialName("flight_iata") val flightIata: String? = null,
+    @SerialName("flight_icao") val flightIcao: String? = null
 )
 
 // ✅ جزئیات فرود مبدأ

@@ -1,7 +1,9 @@
 package com.example.parvaznama.view.component.item
 
 import Airline
+import FlightDetail
 import FlightArrival
+import FlightData
 import FlightDeparture
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -48,11 +50,13 @@ import com.example.parvaznama.R
 import com.example.parvaznama.utils.AirportRepository
 import com.example.parvaznama.utils.convertEngToPerStats
 import com.example.parvaznama.utils.convertMiladiToShamsi
+import com.example.parvaznama.utils.toPersianDigits
 import com.example.parvaznama.view.navigation.InformationSc
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AirlineListItem(
+    flight:FlightDetail?,
     status: String?,
     departures: FlightDeparture?,
     arrival: FlightArrival?,
@@ -63,7 +67,6 @@ fun AirlineListItem(
     arrivalIata: String?
 
 ) {
-    var progress by remember { mutableStateOf(0f) }
     var nav = LocalNavigator.currentOrThrow
     var strokeColor: Brush =
         if (convertEngToPerStats(status.toString() ?: "").equals("در حال انجام")) {
@@ -91,6 +94,7 @@ fun AirlineListItem(
             .clickable {
                 nav.parent?.push(
                     InformationSc(
+                        flight=flight,
                         departure = departures,
                         arrival = arrival,
                         departureIata = departureIata,
@@ -151,7 +155,7 @@ fun AirlineListItem(
                     textAlign = TextAlign.Center,
 
                     style = MaterialTheme.typography.bodyLarge,
-                    text = convertMiladiToShamsi(date),
+                    text = convertMiladiToShamsi(date).toPersianDigits(),
 
                     color = MaterialTheme.colorScheme.background
                 )
@@ -211,12 +215,6 @@ fun AirlineListItem(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
                     Text(
-                        style = MaterialTheme.typography.labelLarge,
-                        text = "مبدا",
-
-                        color = MaterialTheme.colorScheme.background
-                    )
-                    Text(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.width(150.dp),
                         style = MaterialTheme.typography.labelMedium,
@@ -244,15 +242,19 @@ fun AirlineListItem(
                     )
 
                 }
-                Spacer(Modifier.weight(1f))
+                Icon(
+                    painter = painterResource(R.drawable.icon_airplane),
+                    contentDescription = "Airplane",
+                    modifier = Modifier
+                        .rotate(0f)
+                        .weight(1f)
+                        .size(50.dp)
+                        .rotate(90f),
+                    tint = MaterialTheme.colorScheme.primary
+                )
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
 
-                    Text(
-                        style = MaterialTheme.typography.labelLarge,
-                        text = "مقصد",
 
-                        color = MaterialTheme.colorScheme.background
-                    )
                     Text(
                         textAlign = TextAlign.Center,
                         modifier = Modifier.width(150.dp),
@@ -282,7 +284,6 @@ fun AirlineListItem(
                 }
 
             }
-            SliderBetweenComp(value = 0.8f, onProgressChange = { progress = it })
 
 
         }
@@ -290,33 +291,3 @@ fun AirlineListItem(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SliderBetweenComp(value: Float, onProgressChange: (Float) -> Unit) {
-    Slider(
-        modifier = Modifier
-            .padding(start = 8.dp, end = 8.dp)
-            .fillMaxWidth()
-            .animateContentSize(),
-        value = value,
-        onValueChange = onProgressChange,
-        thumb = {
-            Box(
-                modifier = Modifier
-                    .clip(CircleShape)
-                    .size(18.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.icon_airplane),
-                    contentDescription = "Airplane",
-                    modifier = Modifier
-                        .size(18.dp)
-                        .rotate(90f),
-                    tint = MaterialTheme.colorScheme.background
-                )
-            }
-        }
-    )
-
-}

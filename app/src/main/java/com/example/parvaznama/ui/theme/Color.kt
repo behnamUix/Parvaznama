@@ -4,7 +4,7 @@ import androidx.compose.ui.graphics.Color
 
 // 🎨 رنگ‌های اصلی
 val Primary = Color(0xFF2196F3)       // نارنجی اصلی
-val Secondary = Color(0xFF29B6F6)     // آبی
+val Secondary = Color(0xFF8BC34A)     // آبی
 val Error = Color(0xFFF44336)         // قرمز خطا
 
 // 🎨 رنگ‌های پس‌زمینه

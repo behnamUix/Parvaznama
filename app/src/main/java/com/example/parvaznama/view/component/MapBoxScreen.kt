@@ -135,7 +135,7 @@ fun MapBoxScreen(
             style.addLayer(
                 lineLayer("flight-line", "flight-route") {
                     lineDasharray(listOf(2.0, 2.0))
-                    lineColor("#F44336")
+                    lineColor("#FFFFFF")
                     lineCap(LineCap.ROUND)
                     lineWidth(3.0)
                 }

@@ -1,11 +1,15 @@
-package com.example.parvaznama.view.navigation
+package com.example.parvaznama.view.navigation.tabbar
 
 import android.os.Build
 import android.util.Log
 import android.widget.Toast
 import androidx.annotation.RequiresApi
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.EaseInElastic
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +21,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
@@ -43,28 +49,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.example.parvaznama.R
 import com.example.parvaznama.utils.AirportRepository
 import com.example.parvaznama.view.component.item.AirlineListItem
-import com.example.parvaznama.view.component.MapBoxScreen
 import com.example.parvaznama.view.component.MapBoxScreenAirport
 import com.example.parvaznama.view.component.item.AirportListCardItem
+import com.example.parvaznama.view.navigation.WorldpMapSc
 import com.example.parvaznama.view.viewModel.AirlineViewModel
 import com.example.parvaznama.view.viewModel.AirportViewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import org.koin.androidx.compose.koinViewModel
-
+//Tabs
 object AirlineListTab : Tab {
     private fun readResolve(): Any = AirlineListTab
 
     override val options: TabOptions
         @Composable
         get() {
-            val title = "پرواز های جاری"
+            val title = "پرواز ها"
             return remember {
                 TabOptions(index = 0u, title = title)
             }
@@ -126,14 +134,13 @@ object AirlineListTab : Tab {
                         val count = minOf(departures.size, arrivals.size, flights.size)
                         LazyColumn(Modifier.fillMaxHeight()) {
                             items(count) { index ->
-                                // راه‌حل اول: قبل از دسترسی بررسی می‌کنیم که ایندکس معتبر باشه
                                 if (index < departures.size && index < arrivals.size && index < flights.size) {
                                     val dep = departures[index]
                                     val arr = arrivals[index]
                                     val flight = flights[index]
 
                                     AirlineListItem(
-
+                                        flight=flight.flight,
                                         status = flight.flightStatus,
                                         departures = flight.departure,
                                         arrival = flight.arrival,
@@ -144,7 +151,6 @@ object AirlineListTab : Tab {
                                         arrivalIata = arr.iata
                                     )
                                 }
-                                // در غیر این صورت آیتمی رسم نمی‌شود (امنیت در برابر تغییرات همزمان لیست)
                             }
                         }
 
@@ -154,38 +160,6 @@ object AirlineListTab : Tab {
                 }
             }
         }
-    }
-}
-
-
-object AirlineMapTab : Tab {
-
-    override val options: TabOptions
-        @Composable
-        get() {
-            val title = "نقشه ماهواره ای"
-
-            return remember {
-                TabOptions(
-                    index = 1u,
-                    title = title,
-                )
-            }
-        }
-
-    @Composable
-    override fun Content() {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.onPrimary)
-        ) {
-
-            MapBoxScreen()
-
-
-        }
-
     }
 }
 
@@ -206,70 +180,96 @@ object AirportSearchTab : Tab {
 
     @Composable
     override fun Content() {
+        var showMap by remember { mutableStateOf(false) }
         var lon by remember { mutableStateOf(37.5) }
         var lat by remember { mutableStateOf(45.3) }
-        var query by rememberSaveable { mutableStateOf("") }
-        var isLoading by remember { mutableStateOf(true) }
+        var query by rememberSaveable { mutableStateOf("tehran") }
+        var isLoading by remember { mutableStateOf(false) }
         var airportViewModel: AirportViewModel = koinViewModel()
         val airports by airportViewModel.airports.collectAsState()
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
+                .animateContentSize(tween(easing = EaseInElastic, durationMillis = 5000))
                 .padding(8.dp)
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.onPrimary)
         ) {
-            OutlinedCard(
+
+
+            Card(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-            ) {
-                MapBoxScreenAirport(
-                    lon, lat
-                )
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    modifier = Modifier.border(0.5.dp,MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp)),
-                    onClick = {
-                            airportViewModel.loadAirport(query)
-                            isLoading = false
+                    .padding(4.dp)
+                    .clickable {},
+                elevation = CardDefaults.elevatedCardElevation(4.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary)
+
+
+            ){
+                Column(modifier = Modifier.padding(8.dp)) {
+                    Text(style = MaterialTheme.typography.displaySmall, modifier = Modifier.fillMaxWidth(),text = "جستجوی تمام فرودگاه های دنیا", color = MaterialTheme.colorScheme.primary)
+
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        IconButton(
+                            modifier = Modifier.border(0.5.dp,MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp)),
+                            onClick = {
+                                airportViewModel.loadAirport(query)
+                                isLoading = false
+                                showMap=true
+
+                            }
+                        ) {
+                            Icon(
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.weight(0.1f),
+                                painter = painterResource(R.drawable.icon_search),
+                                contentDescription = ""
+
+                            )
+                        }
+
+                        OutlinedTextField(
+                            colors = OutlinedTextFieldDefaults.colors(focusedTextColor = MaterialTheme.colorScheme.background),
+
+                            placeholder = {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    text = "فرودگاه مورد نظر را جستجو کنید(انگلیسی)"
+                                )
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            textStyle = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier
+                                .weight(0.8f)
+                                .fillMaxWidth()
+                                .padding(8.dp),
+                            value = query,
+                            onValueChange = {
+                                isLoading=false
+                                query = it
+
+                            }
+                        )
 
                     }
-                ) {
-                    Icon(
-                        tint = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.weight(0.1f),
-                        painter = painterResource(R.drawable.icon_search),
-                        contentDescription = ""
-
-                    )
                 }
 
-                OutlinedTextField(
-                    colors = OutlinedTextFieldDefaults.colors(focusedTextColor = MaterialTheme.colorScheme.background),
 
-                    placeholder = {
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            style = MaterialTheme.typography.bodySmall,
-                            text = "فرودگاه مورد نظر را جستجو کنید(انگلیسی)"
-                        )
-                    },
-                    shape = RoundedCornerShape(8.dp),
-                    textStyle = MaterialTheme.typography.bodyMedium,
+           }
+            if(showMap) {
+                OutlinedCard(
                     modifier = Modifier
-                        .weight(0.8f)
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    value = query,
-                    onValueChange = {
-                        isLoading=false
-                        query = it
+                        .height(200.dp)
+                ) {
 
-                    }
-                )
+                    MapBoxScreenAirport(
+                        lon, lat
+                    )
 
+                }
             }
             if (isLoading) {
                 Box(
@@ -297,19 +297,21 @@ object AirportSearchTab : Tab {
 
 
         }
+        WorldMapFab()
+
 
     }
 
 
 }
 
+//TabConfig
 @Composable
 fun TopNavigation(tabNavigator: TabNavigator) {
     // تعریف لیستی از تمام تب‌ها
-    val tabs = listOf(AirlineListTab, AirlineMapTab, AirportSearchTab)
+    val tabs = listOf(AirlineListTab, AirportSearchTab)
 
     NavigationBar(
-        modifier = Modifier.height(80.dp),
 
         containerColor = MaterialTheme.colorScheme.onPrimary
     ) {
@@ -319,6 +321,7 @@ fun TopNavigation(tabNavigator: TabNavigator) {
             NavigationBarItem(
                 colors =
                     NavigationBarItemDefaults.colors(
+
                         indicatorColor = MaterialTheme.colorScheme.primary,
                         selectedTextColor = MaterialTheme.colorScheme.primary
                     ),
@@ -334,6 +337,33 @@ fun TopNavigation(tabNavigator: TabNavigator) {
                     tabNavigator.current = tab
                 }
             )
+        }
+    }
+}
+
+//Extended FloatingActionButton
+@Composable
+fun WorldMapFab() {
+    var nav= LocalNavigator.currentOrThrow
+
+    Box(Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.BottomEnd){
+        ExtendedFloatingActionButton(
+            containerColor = MaterialTheme.colorScheme.onPrimary,
+            onClick = {
+                // عملی که میخوای هنگام کلیک انجام بشه
+                println("FAB زده شد!")
+            }
+        ) {
+            IconButton(
+                onClick = {nav.parent?.push(WorldpMapSc)}
+            ) {
+                Icon(
+                    contentDescription = "",
+                    tint = MaterialTheme.colorScheme.primary,
+                    painter = painterResource(R.drawable.icon_map2),
+
+                    )
+            }
         }
     }
 }

@@ -1,14 +1,20 @@
 package com.example.parvaznama.view.navigation
 
 import Airline
+
 import FlightArrival
 import FlightDeparture
+import FlightDetail
+import android.os.Build
+import android.util.Log
+import androidx.annotation.RequiresApi
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseInBack
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,15 +26,23 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -39,21 +53,27 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.TabNavigator
+import coil.compose.AsyncImage
 import com.example.parvaznama.R
 import com.example.parvaznama.utils.AirportRepository
 import com.example.parvaznama.utils.getCoordinateWithCity
+import com.example.parvaznama.utils.toPersianDigits
 import com.example.parvaznama.view.anim.LoadingAnim
 import com.example.parvaznama.view.component.BottomSheetComp
 import com.example.parvaznama.view.component.MapBoxScreen
-import com.example.parvaznama.view.component.ToolbarComp
+import com.example.parvaznama.view.navigation.tabbar.AirportSearchTab
+import com.example.parvaznama.view.navigation.tabbar.TopNavigation
+import com.example.parvaznama.view.viewModel.AirportViewModel
 import com.orhanobut.hawk.Hawk
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.koin.androidx.compose.koinViewModel
 
 object SplashSc : Screen {
     @Composable
@@ -166,8 +186,6 @@ object SplashSc : Screen {
                             ) {
 
 
-
-
                                 Text(
                                     color = MaterialTheme.colorScheme.background,
                                     text = "پروازنما",
@@ -233,26 +251,15 @@ object HomeSc : Screen {
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            Text(
-                modifier = Modifier.padding(top = 16.dp),
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.background,
-                text = "پروازنما"
-            )
 
-            Column(
-                modifier = Modifier
-            ) {
-                TabNavigator(AirportSearchTab) { tabNavigator ->
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        TopNavigation(tabNavigator = tabNavigator)
-                        Box(modifier = Modifier.weight(1f)) {
-                            tabNavigator.current.Content()
-                        }
+
+            TabNavigator(AirportSearchTab) { tabNavigator ->
+                Column(modifier = Modifier.fillMaxSize()) {
+                    TopNavigation(tabNavigator = tabNavigator)
+                    Box(modifier = Modifier.weight(1f)) {
+                        tabNavigator.current.Content()
                     }
                 }
-
-
             }
 
 
@@ -263,7 +270,25 @@ object HomeSc : Screen {
 
 }
 
+object WorldpMapSc : Screen {
+    @Composable
+    override fun Content() {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.onPrimary)
+        ) {
+
+            MapBoxScreen()
+
+
+        }
+    }
+
+}
+
 data class InformationSc(
+    val flight: FlightDetail?,
     val departure: FlightDeparture?,
     val arrival: FlightArrival?,
     val airline: Airline?,
@@ -271,6 +296,7 @@ data class InformationSc(
     var arrivalIata: String?,
     var repo: AirportRepository
 ) : Screen {
+    @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     override fun Content() {
         var nav = LocalNavigator.currentOrThrow
@@ -283,12 +309,6 @@ data class InformationSc(
 
 
         Column() {
-
-
-            ToolbarComp(
-                airline?.name.toString(),
-                R.drawable.icon_back,
-                iconClick = { nav.pop() })
 
 
             Box(
@@ -310,6 +330,9 @@ data class InformationSc(
 
 
                 BottomSheetComp(
+                    flight = flight,
+                    iata = airline?.iata,
+                    airline = airline?.name.toString(),
                     departure = departure,
                     arrival = arrival,
                     originCoord = originCoord,
@@ -324,12 +347,196 @@ data class InformationSc(
 
 }
 
-object MapSc : Screen {
+data class AircraftListFromAirlineSc(var airline: String, var iata: String) : Screen {
+    @RequiresApi(Build.VERSION_CODES.O)
     @Composable
     override fun Content() {
-        TODO("Not yet implemented")
+        var aircraftViewModel: AirportViewModel = koinViewModel()
+        val aircrafts by aircraftViewModel.aircraft.collectAsState()
+        LaunchedEffect(Unit) {
+            aircraftViewModel.loadAircraftAirlineByIata(iata)
+        }
+        Column(
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text(
+                style = MaterialTheme.typography.headlineSmall,
+                text = " هواپیما های شرکت ${airline}",
+                color = MaterialTheme.colorScheme.background
+            )
+            LazyColumn {
+                items(items = aircrafts) {
+                    Card(
+                        modifier = Modifier
+                            .padding(4.dp),
+                        elevation = CardDefaults.elevatedCardElevation(4.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary)
+
+
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.End,
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            AsyncImage(
+                                model = "https://cdn.jetphotos.com/full/6/959274_1695575317.jpg",
+                                contentDescription = "",
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp)
+                                    .clickable { RoundedCornerShape(16.dp) },
+                                contentScale = ContentScale.Crop
+                            )
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(4.dp),
+                                horizontalAlignment = Alignment.End,
+
+                                modifier = Modifier.padding(8.dp)
+                            ) {
+
+                                TextValue(it.typeName.toString() ?: "", "مدل هواپیما")
+
+                                TextValue(
+                                    it.numSeats?.toString()?.toPersianDigits() ?: "",
+                                    "ظرفیت صندلی"
+                                )
+
+
+                                TextValue(
+                                    value = it.firstFlightDate.toString() ?: "",
+                                    label = "تاریخ اولین پرواز"
+                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceEvenly,
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = it.numEngines?.toString()?.toPersianDigits()
+                                                ?: "",
+                                            color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
+                                        )
+                                        Text(
+                                            text = "تعداد موتور",
+                                            color = MaterialTheme.colorScheme.background
+                                        )
+                                    }
+
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
+                                    ) {
+                                        Text(
+                                            text = it.engineType ?: "",
+                                            color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f)
+                                        )
+
+                                        Text(
+                                            text = "نوع موتور",
+                                            color = MaterialTheme.colorScheme.background
+                                        )
+                                    }
+                                }
+                                HorizontalDivider(thickness = 0.5.dp)
+
+
+                                TextValue(
+                                    it.ageYears?.toString()?.toPersianDigits() ?: "",
+                                    "سن هواپیما"
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
+}
+
+data class FullDetailSc(
+    val flight: FlightDetail,
+    var repo: AirportRepository
+) : Screen {
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val context = LocalContext.current
+        val viewModel: AirportViewModel = koinViewModel()
+        val fullDetail by viewModel.fullDetail.collectAsState()
+
+        LaunchedEffect(flight.iata ?: flight.number) {
+            val code = flight.iata ?: flight.number
+            if (!code.isNullOrEmpty()) {
+                Log.d("debugX23", "Requesting full detail for: $code")
+                viewModel.loadFullDetailFlightByIata(code)
+            } else {
+                Log.e("debugX23", "❌ Flight code is null or empty")
+            }
+        }
+
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.onPrimary)
+                .padding(16.dp)
+                .verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            when {
+                fullDetail.isEmpty() -> {
+                    // 🔄 در حال بارگذاری
+                    CircularProgressIndicator()
+                    Text(
+                        "در حال دریافت اطلاعات پرواز...",
+                        color = MaterialTheme.colorScheme.background,
+                        style = MaterialTheme.typography.labelMedium,
+                        textAlign = TextAlign.Center
+                    )
+                }
+
+                else -> {
+                    // ✅ نمایش اطلاعات پرواز
+                    val detail = fullDetail.first()
+                    Text(
+                        text = "📏 فاصله: ${detail.greatCircleDistance.mile} مایل",
+                        color = MaterialTheme.colorScheme.background,
+                        style = MaterialTheme.typography.titleMedium,
+                        textAlign = TextAlign.Center
+                    )
+
+
+                }
+            }
+        }
+    }
+}
+
+
+@Composable
+fun TextValue(value: String, label: String) {
+    Column(horizontalAlignment = Alignment.End) {
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(text = value, color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
+            Text(text = "${label}:", color = MaterialTheme.colorScheme.background)
+        }
+        HorizontalDivider(thickness = 0.5.dp)
+
+    }
 }
 
 

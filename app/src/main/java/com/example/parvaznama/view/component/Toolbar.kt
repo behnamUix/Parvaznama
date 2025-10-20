@@ -32,14 +32,15 @@ fun ToolbarComp(title: String, icon: Int, iconClick: () -> Unit) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
+
             .fillMaxWidth()
-            .height(80.dp)
-            .background(MaterialTheme.colorScheme.background)
+            .height(65.dp)
+
     ) {
         Text(
             textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth(),
-            color = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            color = MaterialTheme.colorScheme.background,
             style = MaterialTheme.typography.headlineSmall,
             text = title
 

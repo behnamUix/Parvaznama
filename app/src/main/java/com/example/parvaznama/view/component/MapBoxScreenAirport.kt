@@ -65,7 +65,7 @@ fun MapBoxScreenAirport(
     }
 
     LaunchedEffect(long,lat) {
-        mapView.getMapboxMap().loadStyleUri(Style.SATELLITE_STREETS) { style ->
+        mapView.getMapboxMap().loadStyleUri(Style.MAPBOX_STREETS) { style ->
             val skyLayer = SkyLayer("sky-layer").skyType(SkyType.ATMOSPHERE)
                 .skyAtmosphereSun(listOf(0.0, 90.0)).skyAtmosphereSunIntensity(10.0)
             style.addLayer(skyLayer)
@@ -79,14 +79,14 @@ fun MapBoxScreenAirport(
             mapView.getMapboxMap().setCamera(
                 CameraOptions.Builder()
                     .center(point)
-                    .zoom(8.0)
+                    .zoom(6.0)
                     .build()
             )
 
             mapView.getMapboxMap().flyTo(
                 cameraOptions = CameraOptions.Builder()
                     .center(point)
-                    .zoom(14.0)
+                    .zoom(12.0)
                     .build(),
                 animationOptions = com.mapbox.maps.plugin.animation.MapAnimationOptions.mapAnimationOptions {
                     duration(1500) // زمان انیمیشن 1.5 ثانیه

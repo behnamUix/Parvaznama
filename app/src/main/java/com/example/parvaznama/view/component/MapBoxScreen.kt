@@ -87,31 +87,14 @@ fun MapBoxScreen(
 
     // بارگذاری استایل و تنظیم مسیر و مارکرها
     LaunchedEffect(userLocation) {
-        mapView.getMapboxMap().loadStyleUri(Style.STANDARD_SATELLITE) { style ->
-
-            val demSource = RasterDemSource.Builder("terrain-source")
-                .url("mapbox://mapbox.mapbox-terrain-dem-v1")
-                .tileSize(512)
-                .build()
-            style.addSource(demSource)
-            style.setTerrain(Terrain("terrain-source"))
-
+        mapView.getMapboxMap().loadStyleUri(Style.SATELLITE_STREETS) { style ->
             val skyLayer = SkyLayer("sky-layer")
                 .skyType(SkyType.ATMOSPHERE)
                 .skyAtmosphereSun(listOf(0.0, 90.0))
                 .skyAtmosphereSunIntensity(10.0)
             style.addLayer(skyLayer)
 
-            // 4️⃣ فعال‌کردن ساختمان‌های سه‌بعدی
-            val buildingLayer = FillExtrusionLayer("3d-buildings", "composite")
-                .sourceLayer("building")
-                .filter(Expression.eq(Expression.get("extrude"), Expression.literal(true)))
-                .minZoom(15.0)
-                .fillExtrusionColor("#aaa")
-                .fillExtrusionHeight(Expression.get("height"))
-                .fillExtrusionBase(Expression.get("min_height"))
-                .fillExtrusionOpacity(0.8)
-            style.addLayer(buildingLayer)
+
             // افزودن آیکون
             val bitmap = getBitmapFromVectorDrawable(context, R.drawable.icon_gps)
             style.addImage("airport-icon", bitmap)
@@ -135,7 +118,7 @@ fun MapBoxScreen(
             style.addLayer(
                 lineLayer("flight-line", "flight-route") {
                     lineDasharray(listOf(2.0, 2.0))
-                    lineColor("#FFFFFF")
+                    lineColor("#FF5252")
                     lineCap(LineCap.ROUND)
                     lineWidth(3.0)
                 }

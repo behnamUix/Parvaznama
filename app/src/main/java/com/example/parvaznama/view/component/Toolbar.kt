@@ -1,52 +1,65 @@
 package com.example.parvaznama.view.component
 
-import androidx.appcompat.widget.Toolbar
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.parvaznama.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ToolbarComp(title: String, icon: Int, iconClick: () -> Unit) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+fun CustomTopAppBar(title: String = "پروازنما", icon: Boolean = false) {
+    TopAppBar(
         modifier = Modifier
+            .height(85.dp)
+            .fillMaxWidth(),
+        title = {
+            Text(
+                color = MaterialTheme.colorScheme.background,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth(),
+                text = title,
+                style = MaterialTheme.typography.headlineSmall
+            )
+        },
+        actions = {
+            if (icon) {
 
-            .fillMaxWidth()
-            .height(65.dp)
+                Icon(
+                    modifier = Modifier.padding(16.dp),
 
-    ) {
-        Text(
-            textAlign = TextAlign.Center,
-            modifier = Modifier.fillMaxWidth().padding(16.dp),
-            color = MaterialTheme.colorScheme.background,
-            style = MaterialTheme.typography.headlineSmall,
-            text = title
+                    tint = MaterialTheme.colorScheme.background,
 
-        )
-    }
+                    painter = painterResource(R.drawable.icon_menu),
+                    contentDescription = ""
+                )
+            }
+        },
+        colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.onPrimary),
+
+        navigationIcon = {
+            if (icon) {
+                Icon(
+                    modifier = Modifier.padding(16.dp),
+
+                    tint = MaterialTheme.colorScheme.background,
+                    painter = painterResource(R.drawable.icon_notif),
+                    contentDescription = ""
+                )
+            }
+        }
+    )
 }
-
 
 

@@ -56,6 +56,7 @@ import cafe.adriel.voyager.navigator.tab.TabNavigator
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.example.parvaznama.R
 import com.example.parvaznama.utils.AirportRepository
+import com.example.parvaznama.view.anim.LoadingAirplaneAnim
 import com.example.parvaznama.view.component.item.AirlineListItem
 import com.example.parvaznama.view.component.MapBoxScreenAirport
 import com.example.parvaznama.view.component.item.AirportListCardItem
@@ -65,6 +66,7 @@ import com.example.parvaznama.view.viewModel.AirportViewModel
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import org.koin.androidx.compose.koinViewModel
+
 //Tabs
 object AirlineListTab : Tab {
     private fun readResolve(): Any = AirlineListTab
@@ -89,11 +91,12 @@ object AirlineListTab : Tab {
         val arrivals by viewModel.arrivals.collectAsState()
         val flights by viewModel.flights.collectAsState()
         var isLoading = departures.isEmpty() || arrivals.isEmpty() || flights.isEmpty()
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.onPrimary)
-                .padding(16.dp)
+                .padding(8.dp)
         ) {
             when {
                 isLoading -> {
@@ -140,7 +143,7 @@ object AirlineListTab : Tab {
                                     val flight = flights[index]
 
                                     AirlineListItem(
-                                        flight=flight.flight,
+                                        flight = flight.flight,
                                         status = flight.flightStatus,
                                         departures = flight.departure,
                                         arrival = flight.arrival,
@@ -205,18 +208,27 @@ object AirportSearchTab : Tab {
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.onPrimary)
 
 
-            ){
+            ) {
                 Column(modifier = Modifier.padding(8.dp)) {
-                    Text(style = MaterialTheme.typography.displaySmall, modifier = Modifier.fillMaxWidth(),text = "جستجوی تمام فرودگاه های دنیا", color = MaterialTheme.colorScheme.primary)
+                    Text(
+                        style = MaterialTheme.typography.displaySmall,
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "جستجوی تمام فرودگاه های دنیا",
+                        color = MaterialTheme.colorScheme.background
+                    )
 
 
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         IconButton(
-                            modifier = Modifier.border(0.5.dp,MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp)),
+                            modifier = Modifier.border(
+                                0.5.dp,
+                                MaterialTheme.colorScheme.primary,
+                                shape = RoundedCornerShape(8.dp)
+                            ),
                             onClick = {
                                 airportViewModel.loadAirport(query)
                                 isLoading = false
-                                showMap=true
+                                showMap = true
 
                             }
                         ) {
@@ -247,7 +259,7 @@ object AirportSearchTab : Tab {
                                 .padding(8.dp),
                             value = query,
                             onValueChange = {
-                                isLoading=false
+                                isLoading = false
                                 query = it
 
                             }
@@ -257,43 +269,49 @@ object AirportSearchTab : Tab {
                 }
 
 
-           }
-            if(showMap) {
-                OutlinedCard(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                ) {
-
-                    MapBoxScreenAirport(
-                        lon, lat
-                    )
-
-                }
             }
-            if (isLoading) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    CircularProgressIndicator()
+            if(!showMap){
+                LoadingAirplaneAnim()
+
+            }else{
+                if (showMap) {
+                    OutlinedCard(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                    ) {
+
+                        MapBoxScreenAirport(
+                            lon, lat
+                        )
+
+                    }
                 }
-            } else {
-                Column {
+                if (isLoading) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                } else {
+                    Column {
 
-                    LazyColumn {
-                        items(items = airports) {
-                            Log.d("debugX", it.shortName.toString())
+                        LazyColumn {
+                            items(items = airports) {
+                                Log.d("debugX", it.shortName.toString())
 
-                            Log.d("debugX", "${lat.toString()},${lon.toString()}")
-                            AirportListCardItem(it, itemClick = {
-                                lon = it.location.lon
-                                lat = it.location.lat
-                            })
+                                Log.d("debugX", "${lat.toString()},${lon.toString()}")
+                                AirportListCardItem(it, itemClick = {
+                                    lon = it.location.lon
+                                    lat = it.location.lat
+                                })
+                            }
                         }
                     }
                 }
             }
+
 
 
         }
@@ -312,7 +330,7 @@ fun TopNavigation(tabNavigator: TabNavigator) {
     val tabs = listOf(AirlineListTab, AirportSearchTab)
 
     NavigationBar(
-
+        modifier = Modifier.height(80.dp),
         containerColor = MaterialTheme.colorScheme.onPrimary
     ) {
         tabs.forEach { tab ->
@@ -329,7 +347,7 @@ fun TopNavigation(tabNavigator: TabNavigator) {
 
                 },
                 label = {
-                    Text(tab.options.title)
+                    Text(tab.options.title, style = MaterialTheme.typography.bodyMedium)
                 },
                 selected = isSelected,
                 onClick = {
@@ -344,9 +362,11 @@ fun TopNavigation(tabNavigator: TabNavigator) {
 //Extended FloatingActionButton
 @Composable
 fun WorldMapFab() {
-    var nav= LocalNavigator.currentOrThrow
+    var nav = LocalNavigator.currentOrThrow
 
-    Box(Modifier.fillMaxSize().padding(16.dp), contentAlignment = Alignment.BottomEnd){
+    Box(Modifier
+        .fillMaxSize()
+        .padding(16.dp), contentAlignment = Alignment.BottomEnd) {
         ExtendedFloatingActionButton(
             containerColor = MaterialTheme.colorScheme.onPrimary,
             onClick = {
@@ -355,11 +375,11 @@ fun WorldMapFab() {
             }
         ) {
             IconButton(
-                onClick = {nav.parent?.push(WorldpMapSc)}
+                onClick = { nav.parent?.push(WorldpMapSc) }
             ) {
                 Icon(
                     contentDescription = "",
-                    tint = MaterialTheme.colorScheme.primary,
+                    tint = MaterialTheme.colorScheme.error,
                     painter = painterResource(R.drawable.icon_map2),
 
                     )

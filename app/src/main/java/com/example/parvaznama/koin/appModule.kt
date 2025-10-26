@@ -20,9 +20,11 @@ val appModule = module {
                 json(
                     Json {
                         ignoreUnknownKeys = true
-                        prettyPrint = true
+                        prettyPrint = false
                         isLenient = true
                     }
+
+
                 )
 
             }
@@ -39,6 +41,6 @@ val appModule = module {
     single { AirportRepository(get()) }
 
     //viewModel
-    viewModel{AirlineViewModel(get())}
-    viewModel{AirportViewModel(get())}
+    viewModel { AirlineViewModel(get()) }
+    viewModel { AirportViewModel(get()) }
 }

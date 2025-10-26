@@ -111,8 +111,8 @@ fun AirlineListItem(
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(8.dp),
-            verticalArrangement = Arrangement.SpaceEvenly
+            modifier = Modifier.padding(4.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(
                 Modifier.fillMaxWidth(),

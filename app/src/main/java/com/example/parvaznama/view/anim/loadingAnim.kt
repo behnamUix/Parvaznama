@@ -20,6 +20,6 @@ fun LoadingAnim() {
         composition = composition,
         progress = { progress },
 
-    )
+        )
 
 }

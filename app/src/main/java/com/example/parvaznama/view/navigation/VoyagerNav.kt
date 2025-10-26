@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,12 +35,16 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -66,7 +71,9 @@ import com.example.parvaznama.utils.getCoordinateWithCity
 import com.example.parvaznama.utils.toPersianDigits
 import com.example.parvaznama.view.anim.LoadingAnim
 import com.example.parvaznama.view.component.BottomSheetComp
+import com.example.parvaznama.view.component.CustomTopAppBar
 import com.example.parvaznama.view.component.MapBoxScreen
+import com.example.parvaznama.view.navigation.tabbar.AirlineListTab
 import com.example.parvaznama.view.navigation.tabbar.AirportSearchTab
 import com.example.parvaznama.view.navigation.tabbar.TopNavigation
 import com.example.parvaznama.view.viewModel.AirportViewModel
@@ -133,6 +140,7 @@ object SplashSc : Screen {
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 Image(
+                    modifier = Modifier.fillMaxSize(),
                     painter = painterResource(R.drawable.img_airplane),
                     contentDescription = "",
                     contentScale = ContentScale.Crop
@@ -244,6 +252,7 @@ object SplashSc : Screen {
 }
 
 object HomeSc : Screen {
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         Column(
@@ -251,9 +260,8 @@ object HomeSc : Screen {
             modifier = Modifier
                 .fillMaxSize()
         ) {
-
-
-            TabNavigator(AirportSearchTab) { tabNavigator ->
+            CustomTopAppBar(icon = true)
+            TabNavigator(AirlineListTab) { tabNavigator ->
                 Column(modifier = Modifier.fillMaxSize()) {
                     TopNavigation(tabNavigator = tabNavigator)
                     Box(modifier = Modifier.weight(1f)) {
@@ -262,13 +270,13 @@ object HomeSc : Screen {
                 }
             }
 
-
         }
 
     }
 
 
 }
+
 
 object WorldpMapSc : Screen {
     @Composable
@@ -301,6 +309,7 @@ data class InformationSc(
     override fun Content() {
         var nav = LocalNavigator.currentOrThrow
         var ctx = LocalContext.current
+
         var originCity = repo.getCityByIATA(arrivalIata ?: "")
         var destinationCity = repo.getCityByIATA(departureIata ?: "")
 
@@ -309,34 +318,18 @@ data class InformationSc(
 
 
         Column() {
-
-
             Box(
                 modifier = Modifier
                     .fillMaxSize(),
                 contentAlignment = Alignment.Center
             ) {
-
-
-                MapBoxScreen(
-                    //جهت تنظیم زوم دوربین
-                    Ulocation = false,
-                    long1 = originCoord?.first ?: 1.2,
-                    lat1 = originCoord?.second ?: 1.2,
-                    long2 = destinationCoord?.first ?: 1.2,
-                    lat2 = destinationCoord?.second ?: 1.2
-                )
-
-
-
                 BottomSheetComp(
                     flight = flight,
                     iata = airline?.iata,
                     airline = airline?.name.toString(),
                     departure = departure,
                     arrival = arrival,
-                    originCoord = originCoord,
-                    destinationCoord = destinationCoord,
+
                     departureIata = departureIata,
                     arrivalIata = arrivalIata,
                     repo = repo
@@ -461,66 +454,7 @@ data class AircraftListFromAirlineSc(var airline: String, var iata: String) : Sc
 
 }
 
-data class FullDetailSc(
-    val flight: FlightDetail,
-    var repo: AirportRepository
-) : Screen {
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    @Composable
-    override fun Content() {
-        val navigator = LocalNavigator.currentOrThrow
-        val context = LocalContext.current
-        val viewModel: AirportViewModel = koinViewModel()
-        val fullDetail by viewModel.fullDetail.collectAsState()
-
-        LaunchedEffect(flight.iata ?: flight.number) {
-            val code = flight.iata ?: flight.number
-            if (!code.isNullOrEmpty()) {
-                Log.d("debugX23", "Requesting full detail for: $code")
-                viewModel.loadFullDetailFlightByIata(code)
-            } else {
-                Log.e("debugX23", "❌ Flight code is null or empty")
-            }
-        }
-
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.onPrimary)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            when {
-                fullDetail.isEmpty() -> {
-                    // 🔄 در حال بارگذاری
-                    CircularProgressIndicator()
-                    Text(
-                        "در حال دریافت اطلاعات پرواز...",
-                        color = MaterialTheme.colorScheme.background,
-                        style = MaterialTheme.typography.labelMedium,
-                        textAlign = TextAlign.Center
-                    )
-                }
-
-                else -> {
-                    // ✅ نمایش اطلاعات پرواز
-                    val detail = fullDetail.first()
-                    Text(
-                        text = "📏 فاصله: ${detail.greatCircleDistance.mile} مایل",
-                        color = MaterialTheme.colorScheme.background,
-                        style = MaterialTheme.typography.titleMedium,
-                        textAlign = TextAlign.Center
-                    )
-
-
-                }
-            }
-        }
-    }
-}
 
 
 @Composable
@@ -532,7 +466,8 @@ fun TextValue(value: String, label: String) {
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             Text(text = value, color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
-            Text(text = "${label}:", color = MaterialTheme.colorScheme.background)
+            Spacer(Modifier.weight(1f))
+            Text(text = "${label}", color = MaterialTheme.colorScheme.background)
         }
         HorizontalDivider(thickness = 0.5.dp)
 

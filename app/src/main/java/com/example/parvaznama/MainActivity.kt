@@ -36,7 +36,7 @@ import com.example.parvaznama.view.navigation.SplashSc
 
 
 import com.example.parvaznama.ui.theme.ParvaznamaTheme
-import com.example.parvaznama.view.component.ToolbarComp
+
 import com.example.parvaznama.view.navigation.HomeSc
 import com.orhanobut.hawk.Hawk
 
@@ -59,35 +59,7 @@ class MainActivity : ComponentActivity() {
 
             ParvaznamaTheme {
                 Scaffold(
-                    topBar = {
-                        TopAppBar(
 
-                            actions = {
-                                Icon(
-                                    tint = MaterialTheme.colorScheme.background,
-                                    modifier = Modifier.padding(16.dp),
-                                    painter = painterResource(R.drawable.icon_menu),
-                                    contentDescription = ""
-                                )
-                            },
-                            colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.onPrimary),
-                            title = {
-                                Text(
-                                    color = MaterialTheme.colorScheme.background,
-                                    textAlign = TextAlign.Center,
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text="پرواز نما",
-                                    style = MaterialTheme.typography.headlineSmall) },
-                            navigationIcon = {
-                                Icon(
-                                    modifier = Modifier.padding(16.dp),
-                                    tint = MaterialTheme.colorScheme.background,
-                                    painter = painterResource(R.drawable.icon_notif),
-                                    contentDescription = ""
-                                )
-                            }
-                        )
-                    }
                 ) { innerPad ->
 
                     Box(
